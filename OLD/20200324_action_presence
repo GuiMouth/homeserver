@@ -1,0 +1,67 @@
+return {
+   active = false,
+   on = {
+	devices = {
+		'Presence',
+		'Mamie'
+	},
+	timer = {
+                'at sunset',
+		'at civiltwilightend',
+		'20 min after civiltwilightend',
+		'at 07:20 on mon,tue,wed,thu,fri'
+        }
+
+   },
+   data = {
+        bPassCivilNight = { initial = false }
+   },
+   execute = function(domoticz, device)
+
+	local maison = domoticz.groups(2)
+	local salon = domoticz.devices(7)
+	local sapin = domoticz.devices(29)
+        local mamie = domoticz.devices(31)
+
+
+        if (device.isDevice) then
+		if (device.active and domoticz.time.isCivilNightTime and mamie.active == false) then
+			salon.switchOn().checkFirst()
+			sapin.switchOn().checkFirst()
+			domoticz.notify('Presence changed' , 'Vous êtes revenus ! #Joie',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+		elseif (device.active == false and mamie.active == false) then
+			maison.switchOff()
+                	domoticz.notify('Presence changed' , 'Plus personne à la maison.',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+		end
+	end
+        if (device.isTimer) then
+--		if (domoticz.device.isNight and domoticz.device.isCivilNightTime == false and (presence.active or mamie.active)) then 
+		if (domoticz.device.matchRule('at sunset') and (presence.active or mamie.active)) then
+			sapin.switchOn().checkFirst()
+                        domoticz.notify('Sapin On' , 'Au sunset',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+--		elseif (domoticz.device.isCivilNightTime and cCivilNight == 0 and (presence.active or mamie.active)) then
+		elseif (domoticz.device.matchRule('at civiltwilightend') and (presence.active or mamie.active)) then 
+                        if (salon.active == false) then 
+				salon.setLevel(50)
+			end
+                        sapin.switchOn().checkFirst()
+			domoticz.notify('Light On' , 'Sapin & Salon 50% au civil night',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+			bPassCivilNight = true
+--		elseif (domoticz.device.isCivilNightTime and cCivilNight == 1) then
+		elseif (domoticz.device.matchRule('20 min after civiltwilightend') and (presence.active or mamie.active)) then
+			if (bPassCivilNight) then
+	                        if (salon.active == false) then
+					salon.setLevel(100)
+					bPassCivilNight = false
+				end
+			end
+		elseif (domoticz.device.matchRule('at 07:20 on mon,tue,wed,thu,fri in week 51') and (presence.active or mamie.active)) then
+			if (salon.active == false) then
+                                salon.setLevel(100)
+                        end
+                        sapin.switchOn().checkFirst()
+                        domoticz.notify('Light On' , 'Good Morning !',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+		end
+	end
+   end
+}

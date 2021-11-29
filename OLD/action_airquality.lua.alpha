@@ -1,0 +1,36 @@
+return {
+        active = false,
+        on = {
+                devices = {
+			[11] = {'between 10:00 and 18:00'}
+		}
+        },
+	data = {
+		previousAirQuality = { initial = ''}
+	},
+--forecast 1 : Sunny, 2:, 3: Cloudy, 4:Rain
+        execute = function(dz, item)
+                local presence = dz.devices(27)
+		local weather = dz.devices(44)
+		if(presence.active) then
+			if(weather.forecast == 1 or weather.forecast == 2) then
+				if(item.quality == 'Mediocre' and dz.data.previousAirQuality ~= 'Mediocre') then 
+		                        dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Excusez moi chers maitres, mais la qualité de lair est mauvaise. Comme il fait beau dehors, je vous conseille daérer lappartement !\'')
+				elseif (item.quality == 'Bad' and dz.data.previousAirQuality ~= 'Bad') then 
+	                                dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Excusez moi chers maitres, mais la qualité de lair est vraiment mauvaise. Comme il fait beau dehors, je vous conseille daérer lappartement !\'')
+	                        elseif (item.quality == 'Excellent' and dz.data.previousAirQuality ~= 'Excellent') then
+	                                dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Chers maitres, la qualité de lair est excellente, vous pouvez arrêter daérer si vous le souhaitez ! Mais comme il fait beau vous pouvez laisser ouvert !\'')
+				end
+			else
+                                if(item.quality == 'Mediocre'  and dz.data.previousAirQuality ~= 'Mediocre') then
+                                        dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Excusez moi chers maitres, mais la qualité de lair est mauvaise. Malgré le temps quil fait je vous conseille daérer ! \'')
+                                elseif (item.quality == 'Bad'  and dz.data.previousAirQuality ~= 'Bad') then
+                                        dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Excusez moi chers maitres, mais la qualité de lair est vraiment mauvaise. Malgré le temps quil fait, je vous conseille daérer ! \'')
+                                elseif (item.quality == 'Excellent' and dz.data.previousAirQuality ~= 'Excellent') then
+                                        dz.utils.osExecute('/home/guimouth/domoticz/scripts/alexa_remote_control.sh -d "Alcatraz salon" -e speak:\'Chers maitres, la qualité de lair est excellente, vous pouvez arrêter daérer si vous le souhaitez ! \'')
+                                end
+ 			end
+			dz.data.previousAirQuality = item.quality
+		end
+        end
+}

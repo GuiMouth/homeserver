@@ -1,0 +1,70 @@
+
+return {
+   active = false,
+   on = {
+        devices = {
+                'Presence',
+                'Mamie'
+        },
+        timer = {
+                'at sunset',
+                'at civiltwilightend',
+                '20 min after civiltwilightend',
+                'at 07:30 on mon,tue,wed,thu,fri'
+        }
+
+   },
+   data = {
+        bPassCivilNight = { initial = false }
+   },
+   execute = function(dz, item)
+
+        local maison = dz.groups(2)
+        local salon = dz.devices(7)
+        local sapin = dz.devices(29)
+        local mamie = dz.devices(31)
+	local presence = dz.devices(27)
+
+        if (item.isDevice) then
+                if (item.active and dz.time.isCivilNightTime and mamie.active == false) then
+                        salon.switchOn().checkFirst()
+                        sapin.switchOn().checkFirst()
+                        dz.notify('Presence changed' , 'Vous êtes revenus ! #Joie',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+                elseif (item.active == false and mamie.active == false) then
+                        maison.switchOff()
+                        dz.notify('Presence changed' , 'Plus personne à la maison.',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+                end
+        end
+        if (item.isTimer) then
+		dz.log('Time is : ' .. dz.time.rawTime)
+--              if (item.isNight and item.isCivilNightTime == false and (presence.active or mamie.active)) then
+                if (dz.time.matchesRule('at sunset') and (presence.active or mamie.active)) then
+                        sapin.switchOn().checkFirst()
+                        dz.notify('Sapin On' , 'Au sunset',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+--              elseif (item.isCivilNightTime and cCivilNight == 0 and (presence.active or mamie.active)) then
+                elseif (dz.time.matchesRule('at civiltwilightend') and (presence.active or mamie.active)) then
+                        if (salon.active == false) then
+                                salon.setLevel(50)
+                        end
+                        sapin.switchOn().checkFirst()
+                        dz.notify('Light On' , 'Sapin & Salon 50% au civil night',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+                        bPassCivilNight = true
+--              elseif (item.isCivilNightTime and cCivilNight == 1) then
+                elseif (dz.time.matchesRule('20 min after civiltwilightend') and (presence.active or mamie.active)) then
+                        if (bPassCivilNight) then
+                                if (salon.active == false) then
+                                        salon.setLevel(100)
+                                        bPassCivilNight = false
+                                end
+                        end
+                elseif (dz.time.matchesRule('at 08:03 on mon,tue,wed,thu,fri in week 51') and (presence.active or mamie.active)) then
+                        if (salon.active == false) then
+                                salon.setLevel(100)
+                        end
+                        sapin.switchOn().checkFirst()
+                        dz.notify('Light On' , 'Good Morning !',dz.PRIORITY_NORMAL,dz.NSS_PUSHBULLET)
+                end
+        end
+   end
+}
+

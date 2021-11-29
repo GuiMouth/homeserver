@@ -1,0 +1,45 @@
+return {
+   active = false,
+   on = {
+      devices = {
+         'Geofence Complique XR',
+         'Geofence Asus ASUS_Z01KDA'
+--	['Test'] = { 'at 20:*'},
+--	'Test'
+      }
+   },
+   execute = function(domoticz, device)
+
+	local presence = domoticz.devices('Presence')
+
+      	if (((device.name == 'Geofence Complique XR' and device.state == 'On' and device.active) and
+         (domoticz.devices('Geofence Asus ASUS_Z01KDA').state == 'Off')) or
+	((domoticz.devices('Geofence Complique XR').state == 'Off') and
+         (device.name == 'Geofence Asus ASUS_Z01KDA' and device.state == 'On' and device.active))) then
+         	domoticz.devices('Salon').switchOn().checkFirst()
+		domoticz.log('Salon activate', domoticz.LOG_INFO)
+	end
+      	if (((domoticz.devices('Geofence Complique XR').state == 'Off') and
+         (device.name == 'Geofence Asus ASUS_Z01KDA' and device.state == 'Off' and device.active)) or
+        ((domoticz.devices('Geofence Asus ASUS_Z01KDA').state == 'Off') and
+         (device.name == 'Geofence Complique XR' and device.state == 'Off' and device.active))) then
+	        	 domoticz.groups('Maison').switchOff().checkFirst()
+			domoticz.log('Maison activate', domoticz.LOG_INFO)
+	end
+	if (device.active) then presence.switchOn().checkFirst()
+	end
+        if ((domoticz.devices('Geofence Complique XR').state == 'Off' and
+         device.name == 'Geofence Asus ASUS_Z01KDA' and device.active == false) or
+        (domoticz.devices('Geofence Asus ASUS_Z01KDA').state == 'Off' and
+         device.name == 'Geofence Complique XR' and device.active == false)) then
+			presence.switchOff().checkFirst()
+--                         domoticz.groups('Maison').switchOff().checkFirst()
+--                       domoticz.log('Maison activate', domoticz.LOG_INFO)
+	end
+--	if (((domoticz.devices('Geofence Asus ASUS_Z01KDA').state == 'Off') and
+--         (device.name == 'Salon' and device.state == 'On' and device.active))) then
+--                 domoticz.groups('Maison').switchOff().checkFirst()
+--		domoticz.log('Maison activate', domoticz.LOG_INFO)
+--	end
+   end
+}

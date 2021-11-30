@@ -11,6 +11,7 @@ return {
 		'at civiltwilightend',
 		'20 min after civiltwilightend',
 		'at 07:20 on mon,tue,wed,thu,fri',
+		'at sunrise',
         }
    },
    logging = {
@@ -25,7 +26,6 @@ return {
 
 	local maison = domoticz.groups(2)
 	local salon = domoticz.groups(4) --domoticz.devices(7)
-	local sapin = domoticz.devices(29)
         local mamie = domoticz.devices(31)
         local presence = domoticz.devices(27)
 	local isNoel = domoticz.devices(95)
@@ -43,7 +43,6 @@ return {
                         	        end
 	                        end)
 			end
---			sapin.switchOn().checkFirst()
 			domoticz.notify('Presence changed' , 'Vous êtes revenus ! #Joie',domoticz.PRIORITY_NORMAL,domoticz.NSS_PUSHBULLET)
 		elseif (device.active == false and mamie.active == false) then
 			maison.switchOff()
@@ -60,7 +59,6 @@ return {
 	end
         if (device.isTimer) then
 		if (domoticz.time.matchesRule('at sunset') and (presence.active or mamie.active)) then
---			sapin.switchOn().checkFirst()
                         if(salon.state == 'Off') then 
 				salon.switchOn()
 	                        salon.devices().forEach(function(device)
@@ -76,13 +74,19 @@ return {
                 	        end)
 			end
 		elseif (domoticz.time.matchesRule('at civiltwilightend') and (presence.active or mamie.active) and salon.state == 'On') then 
+                        domoticz.notify('Timer lumiere' , 'Au civiltwilightend',domoticz.PRIORITY_NORMAL,domoticz.NSS_PUSHBULLET)
 --                        salon.switchOn().checkFirst()
                         salon.devices().forEach(function(device)
                                 if(device.levelVal == 50) then
                                         device.setLevel(100)
                                 end
                         end)
---                        sapin.switchOn().checkFirst()
+                elseif (domoticz.time.matchesRule('at sunrise') and (presence.active or mamie.active)) then
+                        if (isNoel.active and presence.active) then
+                                guirlandes.forEach(function(device)
+                                        device.switchOff()
+                                end)
+                        end
 --		elseif (domoticz.time.matchesRule('at 07:20 on mon,tue,wed,thu,fri in week 51') and (presence.active or mamie.active)) then
 		end
 	end

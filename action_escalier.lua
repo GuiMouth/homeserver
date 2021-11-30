@@ -23,7 +23,7 @@ return {
         if (device.isDevice and alarm.state == domoticz.SECURITY_DISARMED) then
                 if(device.active and device.id == motion_bas.id and domoticz.time.matchesRule('at nighttime')) then
 			escalier_rdc.cancelQueuedCommands()
-	                escalier_rdc.switchOn().forSec(30)
+	                escalier_rdc.switchOn().forSec(61)
                 elseif(device.active and not domoticz.time.matchesRule('at nighttime')) then
                         escalier_rdc.cancelQueuedCommands()
                         escalier_rdc.switchOff()
